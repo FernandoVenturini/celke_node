@@ -7,10 +7,10 @@ const Catalog = () => {
     return (
         <>
             <h1>Catalogo de Produtos</h1>
-            <div className="products-container">
+            <div className="product-container">
                 {productsData.map((product) => {
                     <Products key={product.id} product={product}/>
-                })};
+                })}
             </div>
         </>        
     );
