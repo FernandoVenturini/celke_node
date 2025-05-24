@@ -15,7 +15,7 @@
 ## http://localhost:8080
 
 
-############# AULA 02: COMO INSTALAR TODAS AS DEPENDENCIAS COM NODE.JS #############################
+############# AULA 02: COMO INSTALAR TODAS AS DEPENDENCIAS COM NODE.JS ##########
 1) INSTALANDO TODAS AS DEPENDENCIAS NO PROJETO:
 ## npm install
 
