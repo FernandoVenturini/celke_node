@@ -1,4 +1,4 @@
-######################### AULA 01: INTRODUCAO AO NODE JS (Como criar o primeiro projeto com Node.js) ####################
+############# AULA 01: INTRODUCAO AO NODE JS (Como criar o primeiro projeto com Node.js) ###########
 
 ## SEQUENCIA PARA CRIAR O PROJETO
 
@@ -15,7 +15,7 @@
 ## http://localhost:8080
 
 
-######################### AULA 02: COMO INSTALAR TODAS AS DEPENDENCIAS COM NODE.JS ######################################
+############# AULA 02: COMO INSTALAR TODAS AS DEPENDENCIAS COM NODE.JS #############################
 1) INSTALANDO TODAS AS DEPENDENCIAS NO PROJETO:
 ## npm install
 
