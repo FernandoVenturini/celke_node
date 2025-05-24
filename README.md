@@ -19,3 +19,9 @@
 1) INSTALANDO TODAS AS DEPENDENCIAS NO PROJETO:
 ## npm install
 
+######################## AULA 03: CARREGAR PROJETO COM NODEMON ##########################################################
+1) INSTALANDO NODEMON: Reinicia o servidor sempre que houver alteracao no codigo fonte. A letra 'g' significa globalmente.
+## npm install -g nodemon
+
+2) RODAR O PROJETO COM O NODEMON INSTALADO:
+## nodemon app.js
