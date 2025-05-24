@@ -25,3 +25,12 @@
 
 2) RODAR O PROJETO COM O NODEMON INSTALADO:
 ## nodemon app.js
+
+########################AULA 04: API ##########################
+1) AQUI NAO TEVE AULA. SO FOI EXPLICADO O QUE E API E O QUE FAZ.
+
+###########AULA 05: COMO USAR O INSOMNIA COM NODE.JS ##############
+1) INSATLANDO O INSOMNIA:
+## Digita no google Insomnia e instala no pc.
+## O Insomnia faz uma simulacao de requisicao para um aplicativo.
+
