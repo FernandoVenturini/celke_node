@@ -3,7 +3,7 @@ const app = express();
 
 // CRIANDO ROTA:
 app.get('/', (req, res) => {
-    res.send("Hello, world!");
+    res.send("Bem vindo, Fernando!");
 });
 
 app.listen(8080, () => {
