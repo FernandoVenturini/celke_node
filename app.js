@@ -1,7 +1,11 @@
 // IMPORTANDO O EXPRESS
 const express = require("express");
+
 // INICIALIZANDO O EXPRESS
 const app = express();
+
+// PREPARANDO A APLICACAO PARA RECEBER OS DADOS EM JSON:
+app.use(express.json());
 
 // CRIANDO ROTA GET:
 app.get('/', (req, res) => {
@@ -26,7 +30,17 @@ app.get('/contato/:id', (req, res) => { // FAZENDO REQUISICAO
         email: 'cesar@celke.com',
         // sit: sit AQUI E NO JEITO NORMAL.
         sit // AQUI USANDO A DESESTRUTURACAO.
-        
+
+    });
+});
+
+// CRIANDO ROTA POST:
+app.post('/contato', (req, res) => {
+    const name = req.body.name;
+    const { email } = req.body;
+    return res.json({
+        name: name,
+        email
     });
 });
 

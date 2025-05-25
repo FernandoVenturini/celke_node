@@ -35,4 +35,6 @@
 ## O Insomnia faz uma simulacao de requisicao para um aplicativo.
 
 #######AULA 06: COMO CRIAR O METODO 'GET' NA API E ENVIAR PARAMETRO########
-1) 
+
+#######AULA 07: CRIANDO METODO POST NA API ########
+## Criando uma requisicao(novo registro) com POST na API
