@@ -34,3 +34,5 @@
 ## Digita no google Insomnia e instala no pc.
 ## O Insomnia faz uma simulacao de requisicao para um aplicativo.
 
+#######AULA 06: COMO CRIAR O METODO 'GET' NA API E ENVIAR PARAMETRO########
+1) 
