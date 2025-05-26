@@ -47,6 +47,21 @@ app.post('/contato', (req, res) => {
 
 });
 
+// CRIANDO METODO PUT:
+app.put('/contato/:id', (req, res) => {
+    const { id } = req.params;
+    const { nome } = req.body;
+    const { email } = req.body;
+    //const { _id, nome, email } = req.body; Forma otimizada.
+
+    return res.json([
+        id,
+        //_id,
+        nome,
+        email
+    ]); 
+});
+
 app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.
     console.log("SERVIDOR RODANDO NA PORTA 8080!");
 });
