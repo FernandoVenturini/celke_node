@@ -36,14 +36,17 @@ app.get('/contato/:id', (req, res) => { // FAZENDO REQUISICAO
 
 // CRIANDO ROTA POST:
 app.post('/contato', (req, res) => {
-    const name = req.body.name;
-    const { email } = req.body;
+
+    var name = req.body.name;
+    var { email } = req.body;
+
     return res.json({
         name: name,
         email
     });
+
 });
 
 app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.
-    console.log("SERVIDOR INICIADO NA PORTA 8080!");
+    console.log("SERVIDOR RODANDO NA PORTA 8080!");
 });
