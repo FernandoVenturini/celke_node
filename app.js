@@ -49,9 +49,13 @@ app.post('/contato', (req, res) => {
 
 // CRIANDO METODO PUT:
 app.put('/contato/:id', (req, res) => {
-    const { id } = req.params;
-    const { nome } = req.body;
-    const { email } = req.body;
+    //const id = req.params.id; // USANDO JEITO NORMAL
+    //const nome = req.body.nome; // USANDO JEITO NORMAL
+    //const email = req.body.email; // USANDO JEITO NORMAL
+
+    const { id } = req.params; // USANDO DESESTRUTURACAO
+    const { nome } = req.body;// USANDO DESESTRUTURACAO
+    const { email } = req.body; // USANDO DESESTRUTURACAO
     //const { _id, nome, email } = req.body; Forma otimizada.
 
     return res.json([
@@ -60,6 +64,15 @@ app.put('/contato/:id', (req, res) => {
         nome,
         email
     ]); 
+});
+
+// CRIANDO METODO DELETE:
+app.delete('/contato/:id', (req, res) => {
+    const { id } = req.params;
+
+    return res.json({
+        id
+    });
 });
 
 app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.
