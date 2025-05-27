@@ -7,8 +7,28 @@ const app = express();
 // PREPARANDO A APLICACAO PARA RECEBER OS DADOS EM JSON:
 app.use(express.json());
 
+/* CRIANDO MIDDLEWARES: e executado antes de qualquer rota.
+app.use((req, res, next) => {
+    console.log('Acessou o Middleawares!');
+    next();
+});
+*/ 
+
+// CRIANDO O MIDDLEWARES:
+function valContato(req, res, next) {
+
+    if (!req.body.name) {
+        return res.json({
+            erro: true,
+            mensagem: 'Necessario enviar o e-mail!'
+        });
+    };
+    return next();
+};
+
 // CRIANDO ROTA GET:
 app.get('/', (req, res) => {
+    //console.log('Acessou a rota listar!');
     res.send("Bem vindo, Fernando! Esse e o curso de Node.js!"); // Envia uma resposta de volta ao cliente.
 });
 
@@ -35,7 +55,8 @@ app.get('/contato/:id', (req, res) => { // FAZENDO REQUISICAO
 });
 
 // CRIANDO ROTA POST:
-app.post('/contato', (req, res) => {
+app.post('/contato', valContato, (req, res) => {
+    console.log('Acessou a rota Cadastrar!');
 
     var name = req.body.name;
     var { email } = req.body;
