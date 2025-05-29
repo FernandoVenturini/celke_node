@@ -27,13 +27,19 @@ function valContato(req, res, next) {
 };
 
 // CRIANDO ROTA GET:
-app.get('/', (req, res) => {
+app.get('/usuarios', (req, res) => {
+    return res.json({
+        erro: false,
+        nome: 'Fernando',
+        curso: 'Node.js',
+        site: 'https://www.celke.com'
+    })
     //console.log('Acessou a rota listar!');
-    res.send("Bem vindo, Fernando! Esse e o curso de Node.js!"); // Envia uma resposta de volta ao cliente.
+    //res.send("Bem vindo, Fernando! Esse e o curso de Node.js!!!"); // Envia uma resposta de volta ao cliente.
 });
 
 // ROTA GET - CONTATO(VISUALIZAR):
-app.get('/contato/:id', (req, res) => { // FAZENDO REQUISICAO
+app.get('/usuarios/:id', (req, res) => { // FAZENDO REQUISICAO
     // res.send('Visualizar contato!');
 
     //const id = req.params.id; AQUI E NO JEITO NORMAL.
@@ -43,14 +49,12 @@ app.get('/contato/:id', (req, res) => { // FAZENDO REQUISICAO
     const {sit} = req.query; // AQUI USANDO A DESESTRUTURACAO.
 
     return res.json({
-
         //id: id, AQUI E NO JEITO NORMAL.
         id, // AQUI USANDO A DESESTRUTURACAO.
         nome: 'Cesar',
         email: 'cesar@celke.com',
         // sit: sit AQUI E NO JEITO NORMAL.
         sit // AQUI USANDO A DESESTRUTURACAO.
-
     });
 });
 
