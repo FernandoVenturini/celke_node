@@ -11,8 +11,7 @@ app.use(express.json());
 app.use((req, res, next) => {
     console.log('Acessou o Middleawares!');
     next();
-});
-*/ 
+}); 
 
 // CRIANDO O MIDDLEWARES:
 function valContato(req, res, next) {
@@ -25,6 +24,7 @@ function valContato(req, res, next) {
     };
     return next();
 };
+*/
 
 // CRIANDO ROTA GET:
 app.get('/usuarios', (req, res) => {
@@ -39,7 +39,7 @@ app.get('/usuarios', (req, res) => {
 });
 
 // ROTA GET - CONTATO(VISUALIZAR):
-app.get('/usuarios/:id', (req, res) => { // FAZENDO REQUISICAO
+app.get('/usuario/:id', (req, res) => { // FAZENDO REQUISICAO
     // res.send('Visualizar contato!');
 
     //const id = req.params.id; AQUI E NO JEITO NORMAL.
@@ -58,8 +58,40 @@ app.get('/usuarios/:id', (req, res) => { // FAZENDO REQUISICAO
     });
 });
 
+// CRIANDO ROTA POST: NODE.JS + MYSQL:
+app.post('/usuario', (req, res) => {
+    const { nome, email  } = req.body;
+
+    return res.json({
+        erro: false,
+        nome,
+        email
+    });
+});
+
+// CRIANDO ROTA PUT:
+app.put('/usuario', (req, res) => {
+    const { id, nome, email } = req.body;
+
+    return res.json({
+        erro: false,
+        id,
+        nome,
+        email
+    });
+});
+
+// CRIANDO ROTA DELETE:
+app.delete('/usuario/:id', (req, res) => {
+    const { id } = req.params;
+    return res.json({
+        erro: false,
+        id
+    });
+});
+
 // CRIANDO ROTA POST:
-app.post('/contato', valContato, (req, res) => {
+/*app.post('/contato', valContato, (req, res) => {
     console.log('Acessou a rota Cadastrar!');
 
     var name = req.body.name;
@@ -99,7 +131,7 @@ app.delete('/contato/:id', (req, res) => {
         id
     });
 });
-
+*/
 app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.
     console.log("SERVIDOR RODANDO NA PORTA 8080!");
 });
