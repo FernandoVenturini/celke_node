@@ -38,3 +38,8 @@
 
 #######AULA 07: CRIANDO METODO POST NA API ########
 ## Criando uma requisicao(novo registro) com POST na API
+
+#########COMANDOS BASICOS DO MySQL######################
+### Instalar o banco de dados MySQL
+    ## Verificar o banco de dados MySQL no prompt de comando
+        -> mysql -h localhost -u root -p
