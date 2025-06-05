@@ -1,6 +1,8 @@
 // IMPORTANDO O EXPRESS
 const express = require("express");
 
+const Usuario = require('./models/Usuario');
+
 // CONEXAO COM O BANCO DE DADOS
 const db = require('./models/db');
 
@@ -62,14 +64,20 @@ app.get('/usuario/:id', (req, res) => { // FAZENDO REQUISICAO
 });
 
 // CRIANDO ROTA POST: NODE.JS + MYSQL:
-app.post('/usuario', (req, res) => {
-    
-    const { nome, email  } = req.body;
+app.post('/user', async (req, res) => {    
+    const { name, email  } = req.body;
 
-    return res.json({
-        erro: false,
-        nome,
-        email
+    await Usuario.create(req.body)
+    .then(() => {
+        return res.json({
+            erro: false,
+            mensagem: "Usuario cadastrado com sucesso!"
+        });
+    }).catch(() => {
+        return res.status(400).json({
+            erro: true,
+            mensagem: "Erro! Usuario nao cadastrado com sucesso!"
+        })
     });
 });
 
