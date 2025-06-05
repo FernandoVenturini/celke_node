@@ -1,6 +1,9 @@
 // IMPORTANDO O EXPRESS
 const express = require("express");
 
+// CONEXAO COM O BANCO DE DADOS
+const db = require('./models/db');
+
 // INICIALIZANDO O EXPRESS
 const app = express();
 
@@ -60,6 +63,7 @@ app.get('/usuario/:id', (req, res) => { // FAZENDO REQUISICAO
 
 // CRIANDO ROTA POST: NODE.JS + MYSQL:
 app.post('/usuario', (req, res) => {
+    
     const { nome, email  } = req.body;
 
     return res.json({

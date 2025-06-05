@@ -43,3 +43,37 @@
 ### Instalar o banco de dados MySQL
     ## Verificar o banco de dados MySQL no prompt de comando
         -> mysql -h localhost -u root -p
+
+### Comandos basicos de MySQL:
+    ## Criar a base de dados:
+        -> create database celke character set utf8mb4 collate utf8mb4_unicode_ci;
+
+### Criar a tabela
+CREATE TABLE `users`(
+    `id` int NOT NULL AUTO_INCREMENT,
+    `name` varchar(220) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `email` varchar(220) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    primary key (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE= utf8mb4_unicode_ci;
+
+### Selecionar registro no banco de dados:
+    -> SELECT id, name, email FROM users;
+
+### Cadastrar registro no banco de dados:
+    -> INSERT INTO users (name, email) VALUES ('Cesar', 'cesar@celke.com');     
+
+### Limitar quantidade de registros selecionados no banco de dados:
+    -> SELECT id, name, email FROM users LIMIT 3;
+
+### Editar registro do banco de dados
+    -> UPDATE users SET name='Cesar 3a',, email='cesar3a@gmail.com.br' WHERE id=3;
+
+### Apagar registro no banco de dados
+    -> DELETE FROM users WHERE id=7;
+
+### Sequelize e uma biblioteca JavaScript que facilita o gerenciamento de um banco de dados SQL
+    -> npm install --save sequelize 
+
+### Instalar o drive do banco de dados
+    -> npm install --save mysql2
+
