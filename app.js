@@ -32,13 +32,22 @@ function valContato(req, res, next) {
 */
 
 // CRIANDO ROTA GET:
-app.get('/usuarios', (req, res) => {
-    return res.json({
-        erro: false,
-        nome: 'Fernando',
-        curso: 'Node.js',
-        site: 'https://www.celke.com'
+app.get('/users', async (req, res) => {
+
+    await Usuario.findAll()
+    .then ((users) => {
+        return res.json({
+            erro: false,
+            users
+        });
+    }).catch (() => {
+        return res.status(400).json({
+            erro: true,
+            mensagem: "Erro! Nenhum usuario encontrado!"
+        })
     })
+
+    
     //console.log('Acessou a rota listar!');
     //res.send("Bem vindo, Fernando! Esse e o curso de Node.js!!!"); // Envia uma resposta de volta ao cliente.
 });
