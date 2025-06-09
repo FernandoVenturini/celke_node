@@ -34,7 +34,10 @@ function valContato(req, res, next) {
 // CRIANDO ROTA GET:
 app.get('/users', async (req, res) => {
 
-    await Usuario.findAll()
+    await Usuario.findAll({
+        attributes: ['id', 'name', 'email'],
+        order:[['id', 'DESC']]
+    })
     .then ((users) => {
         return res.json({
             erro: false,
