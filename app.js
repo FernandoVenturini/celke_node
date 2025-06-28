@@ -56,11 +56,25 @@ app.get('/users', async (req, res) => {
 });
 
 // ROTA GET - CONTATO(VISUALIZAR):
-app.get('/usuario/:id', (req, res) => { // FAZENDO REQUISICAO
+app.get('/user/:id', async (req, res) => { // FAZENDO REQUISICAO
     // res.send('Visualizar contato!');
 
     //const id = req.params.id; AQUI E NO JEITO NORMAL.
-    const {id} = req.params; // AQUI USANDO A DESESTRUTURACAO.
+    const { id } = req.params; // AQUI USANDO A DESESTRUTURACAO.
+
+    //await Usuario.findAll({ where: { id: id } })
+    await Usuario.findByPk(id) // findByPk = find by primary key, ou seja, busca pelo id do usuario.
+    .then ((user) => { // Se a busca for bem sucedida, o usuario sera retornado.
+        return res.json({ // Retorna o usuario encontrado.
+            erro: false, // Indica que nao houve erro na busca.
+            user: user // Retorna o usuario encontrado.
+        });
+    }).catch (() => { // Se a busca falhar, o erro sera tratado aqui.
+        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
+            erro: true, // Indica que houve um erro na busca.
+            mensagem: 'Erro! Usuario nao encontrado!' // Mensagem de erro.
+        });
+    });
 
     //const sit = req.query.sit; AQUI E NO JEITO NORMAL.
     const {sit} = req.query; // AQUI USANDO A DESESTRUTURACAO.
