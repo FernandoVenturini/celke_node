@@ -1,7 +1,7 @@
 // IMPORTANDO O EXPRESS
 const express = require("express");
 
-const Usuario = require('./models/Usuario');
+const User = require('./models/User');
 
 // CONEXAO COM O BANCO DE DADOS
 const db = require('./models/db');
@@ -33,11 +33,8 @@ function valContato(req, res, next) {
 
 // CRIANDO ROTA GET:
 app.get('/users', async (req, res) => {
-
-    await Usuario.findAll({
-        attributes: ['id', 'name', 'email'],
-        order:[['id', 'DESC']]
-    })
+    // res.send('Listar contatos!');
+    await User.findAll()
     .then ((users) => {
         return res.json({
             erro: false,
@@ -93,7 +90,7 @@ app.get('/user/:id', async (req, res) => { // FAZENDO REQUISICAO
 app.post('/user', async (req, res) => {    
     const { name, email  } = req.body;
 
-    await Usuario.create(req.body)
+    await User.create(req.body)
     .then(() => {
         return res.json({
             erro: false,
@@ -108,19 +105,25 @@ app.post('/user', async (req, res) => {
 });
 
 // CRIANDO ROTA PUT:
-app.put('/usuario', (req, res) => {
-    const { id, nome, email } = req.body;
+app.put('/user', async (req, res) => {
+    const { id } = req.body;
 
-    return res.json({
-        erro: false,
-        id,
-        nome,
-        email
+    await User.update(req.body, {where: {id}})
+    .then(() => {
+        return res.json({
+            erro: false,
+            mensagem: "Usuario editado com sucesso!"
+        })
+    }).catch(() => {
+        return res.status(400).json({
+            erro: true,
+            mensagem: "Erro! Usuario nao editado!"
+        })
     });
 });
 
 // CRIANDO ROTA DELETE:
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/user/:id', (req, res) => {
     const { id } = req.params;
     return res.json({
         erro: false,
