@@ -5,7 +5,7 @@ const Sequelize = require("sequelize");
 const db = require('./db');
 
 // CRIANDO UMA MODEL
-const Usuario = db.define('users', {
+const User = db.define('users', {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -19,9 +19,16 @@ const Usuario = db.define('users', {
     email: {
         type: Sequelize.STRING,
         allowNull: false,
+    },
+    password: {
+        type: Sequelize.STRING,
+        allowNull: false
     }
 });
 
-User.sync();
+// SINCRONIZANDO A MODEL COM O BANCO DE DADOS
+// User.sync({ force: true }); // Força a criação da tabela, apagando dados existentes.
+//User.sync({ alter: true}); // Altera a tabela, mantendo os dados existentes.
+//User.sync(); // Sincroniza a tabela sem alterar os dados existentes.
 
 module.exports = User;

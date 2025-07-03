@@ -6,6 +6,9 @@ const User = require('./models/User');
 // CONEXAO COM O BANCO DE DADOS
 const db = require('./models/db');
 
+// IMPORTANDO O BCRYPTJS
+const bcrypt = require('bcryptjs');
+
 // INICIALIZANDO O EXPRESS
 const app = express();
 
@@ -33,8 +36,11 @@ function valContato(req, res, next) {
 
 // CRIANDO ROTA GET:
 app.get('/users', async (req, res) => {
-    // res.send('Listar contatos!');
-    await User.findAll()
+    
+    await User.findAll({
+        attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
+        order: [['id', 'DESC']] // Ordena os resultados pelo id em ordem decrescente.
+    })
     .then ((users) => {
         return res.json({
             erro: false,
@@ -44,8 +50,8 @@ app.get('/users', async (req, res) => {
         return res.status(400).json({
             erro: true,
             mensagem: "Erro! Nenhum usuario encontrado!"
-        })
-    })
+        });
+    });
 
     
     //console.log('Acessou a rota listar!');
@@ -88,9 +94,10 @@ app.get('/user/:id', async (req, res) => { // FAZENDO REQUISICAO
 
 // CRIANDO ROTA POST: NODE.JS + MYSQL:
 app.post('/user', async (req, res) => {    
-    const { name, email  } = req.body;
+    var dados = req.body;
+    dados.password = await bcrypt.hash(dados.password, 8); // Criptografa a senha do usuario usando bcrypt com um salt de 8 rounds.
 
-    await User.create(req.body)
+    await User.create(dados)
     .then(() => {
         return res.json({
             erro: false,
@@ -118,6 +125,25 @@ app.put('/user', async (req, res) => {
         return res.status(400).json({
             erro: true,
             mensagem: "Erro! Usuario nao editado!"
+        })
+    });
+});
+
+app.put('/user-senha', async (req, res) => { // ROTA PARA EDITAR A SENHA DO USUARIO
+    const { id, password } = req.body; // Extrai o id e a senha do corpo da requisição.
+
+    var senhaCrypt = await bcrypt.hash(password, 8) // Criptografa a nova senha do usuario.
+    
+    await User.update({password: senhaCrypt}, {where: {id}}) // Atualiza o usuario com a nova senha criptografada.
+    .then(() => {
+        return res.json({
+            erro: false,
+            mensagem: "Senha editada com sucesso!"
+        })
+    }).catch(() => {
+        return res.status(400).json({
+            erro: true,
+            mensagem: "Erro! Senha nao editado com sucesso!" 
         })
     });
 });

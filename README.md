@@ -77,3 +77,5 @@ CREATE TABLE `users`(
 ### Instalar o drive do banco de dados
     -> npm install --save mysql2
 
+### Instalar o modulo para criptografar a senha
+    -> npm install --save bcryptjs
