@@ -123,11 +123,20 @@ app.put('/user', async (req, res) => {
 });
 
 // CRIANDO ROTA DELETE:
-app.delete('/user/:id', (req, res) => {
+app.delete('/user/:id', async (req, res) => {
     const { id } = req.params;
-    return res.json({
-        erro: false,
-        id
+
+    await User.destroy({where: {id}})
+    .then(() => {
+        return res.json({
+            erro: false,
+            mensagem: "Usuario excluido com sucesso!"
+        });
+    }).catch(() => {
+        return res.status(400).json({
+            erro: true,
+            mensagem: "Erro! Usuario nao excluido!"
+        });
     });
 });
 
