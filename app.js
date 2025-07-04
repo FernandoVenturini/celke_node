@@ -8,6 +8,7 @@ const db = require('./models/db');
 
 // IMPORTANDO O BCRYPTJS
 const bcrypt = require('bcryptjs');
+const { where } = require("sequelize");
 
 // INICIALIZANDO O EXPRESS
 const app = express();
@@ -34,10 +35,10 @@ function valContato(req, res, next) {
 };
 */
 
-// CRIANDO ROTA GET:
-app.get('/users', async (req, res) => {
+// CRIANDO ROTA GET: NODE.JS + MYSQL:
+app.get('/users', async (req, res) => { // ROTA PARA LISTAR TODOS OS USUARIOS
     
-    await User.findAll({
+    await User.findAll({ // findAll = busca todos os usuarios no banco de dados.
         attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
         order: [['id', 'DESC']] // Ordena os resultados pelo id em ordem decrescente.
     })
@@ -58,12 +59,12 @@ app.get('/users', async (req, res) => {
     //res.send("Bem vindo, Fernando! Esse e o curso de Node.js!!!"); // Envia uma resposta de volta ao cliente.
 });
 
-// ROTA GET - CONTATO(VISUALIZAR):
-app.get('/user/:id', async (req, res) => { // FAZENDO REQUISICAO
+// CRIANDO ROTA GET: NODE.JS + MYSQL:
+app.get('/user/:id', async (req, res) => { // ROTA PARA VISUALIZAR UM USUARIO ESPECIFICO
     // res.send('Visualizar contato!');
 
     //const id = req.params.id; AQUI E NO JEITO NORMAL.
-    const { id } = req.params; // AQUI USANDO A DESESTRUTURACAO.
+    const { id } = req.params; // AQUI USANDO A DESESTRUTURACAO PARA OBTER O ID DO USUARIO DOS PARAMETROS DA REQUISICAO.
 
     //await Usuario.findAll({ where: { id: id } })
     await Usuario.findByPk(id) // findByPk = find by primary key, ou seja, busca pelo id do usuario.
@@ -111,11 +112,11 @@ app.post('/user', async (req, res) => {
     });
 });
 
-// CRIANDO ROTA PUT:
-app.put('/user', async (req, res) => {
-    const { id } = req.body;
+// ROTA PARA EDITAR O USUARIO: NODE.JS + MYSQL:
+app.put('/user', async (req, res) => { // ROTA PARA EDITAR O USUARIO
+    const { id } = req.body; // Extrai o id do corpo da requisição para identificar qual usuario deve ser editado.
 
-    await User.update(req.body, {where: {id}})
+    await User.update(req.body, {where: {id}}) // Atualiza o usuario com os novos dados fornecidos no corpo da requisição, filtrando pelo id do usuario.
     .then(() => {
         return res.json({
             erro: false,
@@ -129,6 +130,7 @@ app.put('/user', async (req, res) => {
     });
 });
 
+// ROTA PARA EDITAR A SENHA DO USUARIO:
 app.put('/user-senha', async (req, res) => { // ROTA PARA EDITAR A SENHA DO USUARIO
     const { id, password } = req.body; // Extrai o id e a senha do corpo da requisição.
 
@@ -148,11 +150,11 @@ app.put('/user-senha', async (req, res) => { // ROTA PARA EDITAR A SENHA DO USUA
     });
 });
 
-// CRIANDO ROTA DELETE:
-app.delete('/user/:id', async (req, res) => {
-    const { id } = req.params;
+// ROTA PARA EXCLUIR O USUARIO: NODE.JS + MYSQL:
+app.delete('/user/:id', async (req, res) => { // ROTA PARA EXCLUIR O USUARIO
+    const { id } = req.params; // Extrai o id do usuario a ser excluido dos parametros da requisição.
 
-    await User.destroy({where: {id}})
+    await User.destroy({where: {id}}) // Exclui o usuario do banco de dados filtrando pelo id fornecido.
     .then(() => {
         return res.json({
             erro: false,
@@ -208,6 +210,40 @@ app.delete('/contato/:id', (req, res) => {
     });
 });
 */
+
+// ROTA PARA LOGIN DO USUARIO: NODE.JS + MYSQL
+app.post('/login', async (req, res) => { // ROTA PARA LOGIN DO USUARIO
+    const user = await User.findOne({ // findOne = busca um unico usuario no banco de dados.
+        attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
+        where: { // where = filtra os resultados com base em uma condicao especifica.
+            email: req.body.email // Filtra os resultados pelo email fornecido no corpo da requisição.
+        }
+    });
+
+    // Se o usuario nao for encontrado, retorna um erro:
+    if (!user) { // Se o usuario nao for encontrado, retorna um erro.
+        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
+            erro: true, // Indica que houve um erro na autenticação.
+            mensagem: "Erro! Usuario nao encontrado!" // Mensagem de erro indicando que o usuario nao foi encontrado.
+        });
+    };
+    
+    // Se o usuario for encontrado, verifica se a senha fornecida corresponde a senha armazenada no banco de dados.
+    // A senha fornecida pelo usuario e comparada com a senha armazenada no banco de dados usando bcrypt.
+    const isPasswordValid = await bcrypt.compare(req.body.password, user.password); // Compara a senha fornecida com a senha armazenada no banco de dados.
+    if (!isPasswordValid) { // Se a senha nao for valida, retorna um erro.
+        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
+            erro: true, // Indica que houve um erro na autenticação.
+            mensagem: "Erro! Senha invalida!" // Mensagem de erro indicando que a senha e invalida.
+        })
+    }
+    return res.json({ // Se a autenticação for bem sucedida, retorna uma resposta de sucesso.
+        erro: false, // Indica que nao houve erro na autenticação.
+        mensagem: "Login efetuado com sucesso!" // Mensagem de sucesso indicando que o login foi efetuado com sucesso.
+    });
+});
+
+
 app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.
     console.log("SERVIDOR RODANDO NA PORTA 8080!");
 });
