@@ -1,14 +1,21 @@
 // IMPORTANDO O EXPRESS
 const express = require("express");
 
-const User = require('./models/User');
-
 // CONEXAO COM O BANCO DE DADOS
 const db = require('./models/db');
 
 // IMPORTANDO O BCRYPTJS
 const bcrypt = require('bcryptjs');
 const { where } = require("sequelize");
+
+// Importando o JWT para autenticação de usuários
+const jwt = require('jsonwebtoken'); 
+
+const { promisify } = require('util'); // Importando o util para usar promisify com o JWT
+// PROMISIFY: Converte uma função baseada em callback em uma função que retorna uma Promise.
+
+// IMPORTANDO O MODELO DE USUARIO
+const User = require('./models/User');
 
 // INICIALIZANDO O EXPRESS
 const app = express();
@@ -36,7 +43,7 @@ function valContato(req, res, next) {
 */
 
 // CRIANDO ROTA GET: NODE.JS + MYSQL:
-app.get('/users', async (req, res) => { // ROTA PARA LISTAR TODOS OS USUARIOS
+app.get('/users', validarToken, async (req, res) => { // ROTA PARA LISTAR TODOS OS USUARIOS
     
     await User.findAll({ // findAll = busca todos os usuarios no banco de dados.
         attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
@@ -60,14 +67,14 @@ app.get('/users', async (req, res) => { // ROTA PARA LISTAR TODOS OS USUARIOS
 });
 
 // CRIANDO ROTA GET: NODE.JS + MYSQL:
-app.get('/user/:id', async (req, res) => { // ROTA PARA VISUALIZAR UM USUARIO ESPECIFICO
+app.get('/user/:id', validarToken, async (req, res) => { // ROTA PARA VISUALIZAR UM USUARIO ESPECIFICO PELO ID
     // res.send('Visualizar contato!');
 
     //const id = req.params.id; AQUI E NO JEITO NORMAL.
     const { id } = req.params; // AQUI USANDO A DESESTRUTURACAO PARA OBTER O ID DO USUARIO DOS PARAMETROS DA REQUISICAO.
 
     //await Usuario.findAll({ where: { id: id } })
-    await Usuario.findByPk(id) // findByPk = find by primary key, ou seja, busca pelo id do usuario.
+    await User.findByPk(id) // findByPk = find by primary key, ou seja, busca pelo id do usuario.
     .then ((user) => { // Se a busca for bem sucedida, o usuario sera retornado.
         return res.json({ // Retorna o usuario encontrado.
             erro: false, // Indica que nao houve erro na busca.
@@ -94,7 +101,7 @@ app.get('/user/:id', async (req, res) => { // ROTA PARA VISUALIZAR UM USUARIO ES
 });
 
 // CRIANDO ROTA POST: NODE.JS + MYSQL:
-app.post('/user', async (req, res) => {    
+app.post('/user', validarToken,  async (req, res) => {    
     var dados = req.body;
     dados.password = await bcrypt.hash(dados.password, 8); // Criptografa a senha do usuario usando bcrypt com um salt de 8 rounds.
 
@@ -113,7 +120,7 @@ app.post('/user', async (req, res) => {
 });
 
 // ROTA PARA EDITAR O USUARIO: NODE.JS + MYSQL:
-app.put('/user', async (req, res) => { // ROTA PARA EDITAR O USUARIO
+app.put('/user', validarToken, async (req, res) => { // ROTA PARA EDITAR O USUARIO
     const { id } = req.body; // Extrai o id do corpo da requisição para identificar qual usuario deve ser editado.
 
     await User.update(req.body, {where: {id}}) // Atualiza o usuario com os novos dados fornecidos no corpo da requisição, filtrando pelo id do usuario.
@@ -131,7 +138,7 @@ app.put('/user', async (req, res) => { // ROTA PARA EDITAR O USUARIO
 });
 
 // ROTA PARA EDITAR A SENHA DO USUARIO:
-app.put('/user-senha', async (req, res) => { // ROTA PARA EDITAR A SENHA DO USUARIO
+app.put('/user-senha', validarToken, async (req, res) => { // ROTA PARA EDITAR A SENHA DO USUARIO
     const { id, password } = req.body; // Extrai o id e a senha do corpo da requisição.
 
     var senhaCrypt = await bcrypt.hash(password, 8) // Criptografa a nova senha do usuario.
@@ -151,7 +158,7 @@ app.put('/user-senha', async (req, res) => { // ROTA PARA EDITAR A SENHA DO USUA
 });
 
 // ROTA PARA EXCLUIR O USUARIO: NODE.JS + MYSQL:
-app.delete('/user/:id', async (req, res) => { // ROTA PARA EXCLUIR O USUARIO
+app.delete('/user/:id', validarToken, async (req, res) => { // ROTA PARA EXCLUIR O USUARIO
     const { id } = req.params; // Extrai o id do usuario a ser excluido dos parametros da requisição.
 
     await User.destroy({where: {id}}) // Exclui o usuario do banco de dados filtrando pelo id fornecido.
@@ -227,7 +234,7 @@ app.post('/login', async (req, res) => { // ROTA PARA LOGIN DO USUARIO
             mensagem: "Erro! Usuario nao encontrado!" // Mensagem de erro indicando que o usuario nao foi encontrado.
         });
     };
-    
+
     // Se o usuario for encontrado, verifica se a senha fornecida corresponde a senha armazenada no banco de dados.
     // A senha fornecida pelo usuario e comparada com a senha armazenada no banco de dados usando bcrypt.
     const isPasswordValid = await bcrypt.compare(req.body.password, user.password); // Compara a senha fornecida com a senha armazenada no banco de dados.
@@ -236,12 +243,47 @@ app.post('/login', async (req, res) => { // ROTA PARA LOGIN DO USUARIO
             erro: true, // Indica que houve um erro na autenticação.
             mensagem: "Erro! Senha invalida!" // Mensagem de erro indicando que a senha e invalida.
         })
-    }
+    };
+
+    // Se a senha for valida, gera um token JWT para o usuario.
+    var token = jwt.sign({ id: user.id }, '2d4b41b34ef2178c541671476f4f3dc2', {
+        expiresIn: '48h' // Define o tempo de expiração do token para 48 horas.
+    });
+
     return res.json({ // Se a autenticação for bem sucedida, retorna uma resposta de sucesso.
         erro: false, // Indica que nao houve erro na autenticação.
-        mensagem: "Login efetuado com sucesso!" // Mensagem de sucesso indicando que o login foi efetuado com sucesso.
+        mensagem: "Login efetuado com sucesso!", // Mensagem de sucesso indicando que o login foi efetuado com sucesso.
+        token // Retorna o token JWT gerado para o usuario.
     });
 });
+
+// ROTA PARA VALIDAR O TOKEN DO USUARIO: NODE.JS + MYSQL
+async function validarToken(req, res, next) {
+    //return res.json({menssagem: "Validar token!"});
+    const authHeader = req.headers.authorization; // Obtém o cabeçalho de autorização da requisição.
+    const [bearer, token] = authHeader.split(' '); // Divide o cabeçalho de autorização em duas partes: o tipo de autenticação e o token.
+
+    if (!token) { // Verifica se o cabeçalho de autorização ou o token estao ausentes.
+        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
+            erro: true, // Indica que houve um erro na validação do token.
+            mensagem: "Erro! Necessario realizar o login para acessar a pagina!" // Mensagem de erro indicando que o token nao foi enviado.
+        });
+    };
+
+    try {
+        const decoded = await promisify(jwt.verify)(token, '2d4b41b34ef2178c541671476f4f3dc2'); // Verifica se o token e valido usando a chave secreta.
+        req.userId = decoded.id; // Extrai o id do usuario do token decodificado.
+        return next(); // Chama o proximo middleware ou rota se o token for valido.
+    } catch (err) {
+        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
+            erro: true, // Indica que houve um erro na validação do token.
+            mensagem: "Erro! Necessario realizar o login para acessar a pagina!" // Mensagem de erro indicando que o token e invalido.
+        });
+    }
+
+    //return res.json({mensagem: token}); // Retorna uma resposta JSON com a mensagem e o cabeçalho de autorização.
+    //return next(); // Chama o proximo middleware ou rota se o token for valido.
+};
 
 
 app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.

@@ -79,3 +79,6 @@ CREATE TABLE `users`(
 
 ### Instalar o modulo para criptografar a senha
     -> npm install --save bcryptjs
+
+### Instalar a dependencia para JWT
+    -> npm install --save jsonwebtoken
