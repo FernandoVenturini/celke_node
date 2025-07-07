@@ -82,3 +82,6 @@ CREATE TABLE `users`(
 
 ### Instalar a dependencia para JWT
     -> npm install --save jsonwebtoken
+
+### Gerenciar variaveis de ambiente
+    -> npm install --save dotenv
