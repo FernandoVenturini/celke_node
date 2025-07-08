@@ -1,6 +1,9 @@
 // IMPORTANDO O EXPRESS
 const express = require("express");
 
+// IMPORTANDO O CORS
+var cors = require('cors'); // Importando o cors para permitir requisições de outros dominios
+
 // CONEXAO COM O BANCO DE DADOS
 const db = require('./models/db');
 
@@ -24,6 +27,15 @@ const app = express();
 
 // PREPARANDO A APLICACAO PARA RECEBER OS DADOS EM JSON:
 app.use(express.json());
+
+// HABILITANDO O CORS: Middleware para permitir requisições de outros dominios:
+app.use((req, res, next) => { // Middleware para permitir o envio de dados no formato JSON)
+    res.header("Access-Control-Allow-Origin", "*"); // Permite que qualquer origem acesse a API
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"); // Permite os métodos HTTP especificados
+    res.header("Access-Control-Allow-Headers", "X-PINGOTHER, Content-Type, Authorization"); // Permite os headers especificados
+    app.use(cors()); // Habilitando o CORS para permitir requisições de outros dominios
+    next(); // Chama o próximo middleware na pilha
+});
 
 /* CRIANDO MIDDLEWARES: e executado antes de qualquer rota.
 app.use((req, res, next) => {
@@ -233,18 +245,17 @@ app.post('/login', async (req, res) => { // ROTA PARA LOGIN DO USUARIO
     if (!user) { // Se o usuario nao for encontrado, retorna um erro.
         return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
             erro: true, // Indica que houve um erro na autenticação.
-            mensagem: "Erro! Usuario nao encontrado!" // Mensagem de erro indicando que o usuario nao foi encontrado.
+            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que o usuario nao foi encontrado.
         });
     };
 
     // Se o usuario for encontrado, verifica se a senha fornecida corresponde a senha armazenada no banco de dados.
-    // A senha fornecida pelo usuario e comparada com a senha armazenada no banco de dados usando bcrypt.
-    const isPasswordValid = await bcrypt.compare(req.body.password, user.password); // Compara a senha fornecida com a senha armazenada no banco de dados.
-    if (!isPasswordValid) { // Se a senha nao for valida, retorna um erro.
+    // bcrypt.compare = compara a senha fornecida com a senha armazenada no banco de dados.
+    if (!(await bcrypt.compare(req.body.password, user.password))) { // Se a senha fornecida nao corresponder a senha armazenada, retorna um erro.
         return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
             erro: true, // Indica que houve um erro na autenticação.
-            mensagem: "Erro! Senha invalida!" // Mensagem de erro indicando que a senha e invalida.
-        })
+            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que a senha e invalida.
+        });
     };
 
     // Se a senha for valida, gera um token JWT para o usuario.

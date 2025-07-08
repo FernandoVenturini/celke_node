@@ -85,3 +85,6 @@ CREATE TABLE `users`(
 
 ### Gerenciar variaveis de ambiente
     -> npm install --save dotenv
+
+### Instalando dependencia cors (PERMITI ACESSO A API)
+    -> npm install --save cors
