@@ -259,7 +259,7 @@ app.post('/login', async (req, res) => { // ROTA PARA LOGIN DO USUARIO
     };
 
     // Se a senha for valida, gera um token JWT para o usuario.
-    var token = jwt.sign({ id: user.id }, process.env.SECRET, { // Cria um token JWT usando a chave secreta definida no arquivo .env.
+    var token = jwt.sign({ id: user.id, levelAcess: 1 }, process.env.SECRET, { // Cria um token JWT usando a chave secreta definida no arquivo .env.
         expiresIn: '48h' // Define o tempo de expiração do token para 48 horas.
     });
 
@@ -267,6 +267,22 @@ app.post('/login', async (req, res) => { // ROTA PARA LOGIN DO USUARIO
         erro: false, // Indica que nao houve erro na autenticação.
         mensagem: "Login efetuado com sucesso!", // Mensagem de sucesso indicando que o login foi efetuado com sucesso.
         token // Retorna o token JWT gerado para o usuario.
+    });
+});
+
+// ROTA PARA VALIDAR O TOKEN DO USUARIO: NODE.JS + MYSQL
+app.get("/val-token", eAdmin, async (req, res) => { // ROTA PARA VALIDAR O TOKEN DO USUARIO
+    await User.findByPk(req.userId, {attributes: ['id', 'name', 'email']}) // findByPk = busca um unico usuario no banco de dados pelo id do usuario.
+    .then((user) => { // Se o usuario for encontrado, retorna uma resposta de sucesso. 
+        return res.json({ // Retorna uma resposta indicando que o token e valido.
+            erro: false, // Indica que nao houve erro na validação do token.
+            user: user, // Retorna o usuario encontrado.
+        });
+    }).catch(() => {
+        return res.json({
+            erro: true, // Indica que houve um erro na validação do token.
+            mensagem: "Erro! Necessario realizar o login para acessar a pagina!" // Mensagem de erro indicando que o usuario nao foi encontrado.
+        });
     });
 });
 
