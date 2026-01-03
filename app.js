@@ -1,371 +1,176 @@
-// Importando o dotenv para carregar variaveis de ambiente
-require('dotenv').config(); // Carrega as variaveis de ambiente do arquivo .env
-
-// IMPORTANDO O EXPRESS
+// =======================
+// IMPORTS
+// =======================
+require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
-// IMPORTANDO O CORS
-var cors = require('cors'); // Importando o cors para permitir requisições de outros dominios
+// Sequelize / DB
+const db = require("./models/db");
+const User = require("./models/User");
 
-const yup = require('yup'); // Importando o yup para validação de dados
+// Middleware de autenticação
+const { eAdmin } = require("./middlewares/auth");
 
-const nodemailer = require('nodemailer'); // Importando o nodemailer para enviar e-mails
-
-// IMPORTANDO O BCRYPTJS
-const bcrypt = require('bcryptjs');
-const { where } = require("sequelize");
-
-// Importando o JWT para autenticação de usuários
-const jwt = require('jsonwebtoken'); 
-
-// CONEXAO COM O BANCO DE DADOS
-const db = require('./models/db');
-
-const { eAdmin } = require('./middlewares/auth'); // Importando o middleware de autenticação
-
-// IMPORTANDO O MODELO DE USUARIO
-const User = require('./models/User');
-
-// INICIALIZANDO O EXPRESS
+// =======================
+// CONFIGURAÇÃO DO APP
+// =======================
 const app = express();
 
-// PREPARANDO A APLICACAO PARA RECEBER OS DADOS EM JSON:
-app.use(express.json());
+app.use(express.json()); // Para receber JSON
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
-// HABILITANDO O CORS: Middleware para permitir requisições de outros dominios:
-app.use((req, res, next) => { // Middleware para permitir o envio de dados no formato JSON)
-    res.header("Access-Control-Allow-Origin", "*"); // Permite que qualquer origem acesse a API
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"); // Permite os métodos HTTP especificados
-    res.header("Access-Control-Allow-Headers", "X-PINGOTHER, Content-Type, Authorization"); // Permite os headers especificados
-    app.use(cors()); // Habilitando o CORS para permitir requisições de outros dominios
-    next(); // Chama o próximo middleware na pilha
+// =======================
+// ROTAS DE TESTE
+// =======================
+app.get("/ping", (req, res) => res.send("pong"));
+
+// =======================
+// ROTAS DE USUÁRIO
+// =======================
+
+// Listar todos os usuários
+app.get("/users", eAdmin, async (req, res) => {
+  try {
+    const users = await User.findAll({
+      attributes: ["id", "name", "email", "password"],
+      order: [["id", "DESC"]]
+    });
+    res.json({ erro: false, users });
+  } catch {
+    res.status(400).json({ erro: true, mensagem: "Erro! Nenhum usuário encontrado!" });
+  }
 });
 
-/* CRIANDO MIDDLEWARES: e executado antes de qualquer rota.
-app.use((req, res, next) => {
-    console.log('Acessou o Middleawares!');
-    next();
-}); 
-
-// CRIANDO O MIDDLEWARES:
-function valContato(req, res, next) {
-
-    if (!req.body.name) {
-        return res.json({
-            erro: true,
-            mensagem: 'Necessario enviar o e-mail!'
-        });
-    };
-    return next();
-};
-*/
-
-// CRIANDO ROTA GET: NODE.JS + MYSQL:
-app.get('/users', eAdmin, async (req, res) => { // ROTA PARA LISTAR TODOS OS USUARIOS
-    
-    await User.findAll({ // findAll = busca todos os usuarios no banco de dados.
-        attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
-        order: [['id', 'DESC']] // Ordena os resultados pelo id em ordem decrescente.
-    })
-    .then ((users) => {
-        return res.json({
-            erro: false,
-            users
-        });
-    }).catch (() => {
-        return res.status(400).json({
-            erro: true,
-            mensagem: "Erro! Nenhum usuario encontrado!"
-        });
-    });
-
-    
-    //console.log('Acessou a rota listar!');
-    //res.send("Bem vindo, Fernando! Esse e o curso de Node.js!!!"); // Envia uma resposta de volta ao cliente.
+// Visualizar usuário por ID
+app.get("/user/:id", eAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ erro: true, mensagem: "Usuário não encontrado!" });
+    res.json({ erro: false, user });
+  } catch {
+    res.status(400).json({ erro: true, mensagem: "Erro ao buscar usuário!" });
+  }
 });
 
-// CRIANDO ROTA GET: NODE.JS + MYSQL:
-app.get('/user/:id', eAdmin, async (req, res) => { // ROTA PARA VISUALIZAR UM USUARIO ESPECIFICO PELO ID
-    // res.send('Visualizar contato!');
-
-    //const id = req.params.id; AQUI E NO JEITO NORMAL.
-    const { id } = req.params; // AQUI USANDO A DESESTRUTURACAO PARA OBTER O ID DO USUARIO DOS PARAMETROS DA REQUISICAO.
-
-    //await Usuario.findAll({ where: { id: id } })
-    await User.findByPk(id) // findByPk = find by primary key, ou seja, busca pelo id do usuario.
-    .then ((user) => { // Se a busca for bem sucedida, o usuario sera retornado.
-        return res.json({ // Retorna o usuario encontrado.
-            erro: false, // Indica que nao houve erro na busca.
-            user: user // Retorna o usuario encontrado.
-        });
-    }).catch (() => { // Se a busca falhar, o erro sera tratado aqui.
-        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
-            erro: true, // Indica que houve um erro na busca.
-            mensagem: 'Erro! Usuario nao encontrado!' // Mensagem de erro.
-        });
-    });
-
-    //const sit = req.query.sit; AQUI E NO JEITO NORMAL.
-    const {sit} = req.query; // AQUI USANDO A DESESTRUTURACAO.
-
-    return res.json({
-        //id: id, AQUI E NO JEITO NORMAL.
-        id, // AQUI USANDO A DESESTRUTURACAO.
-        nome: 'Cesar',
-        email: 'cesar@celke.com',
-        // sit: sit AQUI E NO JEITO NORMAL.
-        sit // AQUI USANDO A DESESTRUTURACAO.
-    });
+// Criar usuário
+app.post("/user", eAdmin, async (req, res) => {
+  try {
+    const dados = req.body;
+    dados.password = await bcrypt.hash(dados.password, 8);
+    await User.create(dados);
+    res.json({ erro: false, mensagem: "Usuário cadastrado com sucesso!" });
+  } catch {
+    res.status(400).json({ erro: true, mensagem: "Erro! Usuário não cadastrado!" });
+  }
 });
 
-// CRIANDO ROTA POST: NODE.JS + MYSQL:
-app.post('/user', eAdmin,  async (req, res) => {    
-    var dados = req.body;
-    dados.password = await bcrypt.hash(dados.password, 8); // Criptografa a senha do usuario usando bcrypt com um salt de 8 rounds.
-
-    await User.create(dados)
-    .then(() => {
-        return res.json({
-            erro: false,
-            mensagem: "Usuario cadastrado com sucesso!"
-        });
-    }).catch(() => {
-        return res.status(400).json({
-            erro: true,
-            mensagem: "Erro! Usuario nao cadastrado com sucesso!"
-        })
-    });
+// Editar usuário
+app.put("/user", eAdmin, async (req, res) => {
+  const { id } = req.body;
+  try {
+    await User.update(req.body, { where: { id } });
+    res.json({ erro: false, mensagem: "Usuário editado com sucesso!" });
+  } catch {
+    res.status(400).json({ erro: true, mensagem: "Erro! Usuário não editado!" });
+  }
 });
 
-// ROTA PARA EDITAR O USUARIO: NODE.JS + MYSQL:
-app.put('/user', eAdmin, async (req, res) => { // ROTA PARA EDITAR O USUARIO
-    const { id } = req.body; // Extrai o id do corpo da requisição para identificar qual usuario deve ser editado.
-
-    await User.update(req.body, {where: {id}}) // Atualiza o usuario com os novos dados fornecidos no corpo da requisição, filtrando pelo id do usuario.
-    .then(() => {
-        return res.json({
-            erro: false,
-            mensagem: "Usuario editado com sucesso!"
-        })
-    }).catch(() => {
-        return res.status(400).json({
-            erro: true,
-            mensagem: "Erro! Usuario nao editado!"
-        })
-    });
+// Alterar senha do usuário
+app.put("/user-senha", eAdmin, async (req, res) => {
+  const { id, password } = req.body;
+  try {
+    const senhaCrypt = await bcrypt.hash(password, 8);
+    await User.update({ password: senhaCrypt }, { where: { id } });
+    res.json({ erro: false, mensagem: "Senha editada com sucesso!" });
+  } catch {
+    res.status(400).json({ erro: true, mensagem: "Erro! Senha não editada!" });
+  }
 });
 
-// ROTA PARA EDITAR A SENHA DO USUARIO:
-app.put('/user-senha', eAdmin, async (req, res) => { // ROTA PARA EDITAR A SENHA DO USUARIO
-    const { id, password } = req.body; // Extrai o id e a senha do corpo da requisição.
-
-    var senhaCrypt = await bcrypt.hash(password, 8) // Criptografa a nova senha do usuario.
-    
-    await User.update({password: senhaCrypt}, {where: {id}}) // Atualiza o usuario com a nova senha criptografada.
-    .then(() => {
-        return res.json({
-            erro: false,
-            mensagem: "Senha editada com sucesso!"
-        })
-    }).catch(() => {
-        return res.status(400).json({
-            erro: true,
-            mensagem: "Erro! Senha nao editado com sucesso!" 
-        })
-    });
+// Excluir usuário
+app.delete("/user/:id", eAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await User.destroy({ where: { id } });
+    res.json({ erro: false, mensagem: "Usuário excluído com sucesso!" });
+  } catch {
+    res.status(400).json({ erro: true, mensagem: "Erro! Usuário não excluído!" });
+  }
 });
 
-// ROTA PARA EXCLUIR O USUARIO: NODE.JS + MYSQL:
-app.delete('/user/:id', eAdmin, async (req, res) => { // ROTA PARA EXCLUIR O USUARIO
-    const { id } = req.params; // Extrai o id do usuario a ser excluido dos parametros da requisição.
+// =======================
+// LOGIN E TOKEN
+// =======================
 
-    await User.destroy({where: {id}}) // Exclui o usuario do banco de dados filtrando pelo id fornecido.
-    .then(() => {
-        return res.json({
-            erro: false,
-            mensagem: "Usuario excluido com sucesso!"
-        });
-    }).catch(() => {
-        return res.status(400).json({
-            erro: true,
-            mensagem: "Erro! Usuario nao excluido!"
-        });
-    });
+// Login
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ where: { email }, attributes: ["id", "name", "email", "password"] });
+
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(400).json({ erro: true, mensagem: "Erro! Usuário ou senha incorreta!" });
+  }
+
+  const token = jwt.sign({ id: user.id, levelAcess: 1 }, process.env.SECRET, { expiresIn: "48h" });
+  res.json({ erro: false, mensagem: "Login efetuado com sucesso!", token });
 });
 
-// CRIANDO ROTA POST:
-/*app.post('/contato', valContato, (req, res) => {
-    console.log('Acessou a rota Cadastrar!');
-
-    var name = req.body.name;
-    var { email } = req.body;
-
-    return res.json({
-        name: name,
-        email
-    });
-
+// Validar token
+app.get("/val-token", eAdmin, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId, { attributes: ["id", "name", "email"] });
+    if (!user) return res.status(404).json({ erro: true, mensagem: "Usuário não encontrado!" });
+    res.json({ erro: false, user });
+  } catch {
+    res.json({ erro: true, mensagem: "Erro! Necessário realizar login para acessar a página!" });
+  }
 });
 
-// CRIANDO METODO PUT:
-app.put('/contato/:id', (req, res) => {
-    //const id = req.params.id; // USANDO JEITO NORMAL
-    //const nome = req.body.nome; // USANDO JEITO NORMAL
-    //const email = req.body.email; // USANDO JEITO NORMAL
+// =======================
+// RECUPERAÇÃO DE SENHA
+// =======================
+app.post("/recover-password", async (req, res) => {
+  try {
+    const { email } = req.body;
 
-    const { id } = req.params; // USANDO DESESTRUTURACAO
-    const { nome } = req.body;// USANDO DESESTRUTURACAO
-    const { email } = req.body; // USANDO DESESTRUTURACAO
-    //const { _id, nome, email } = req.body; Forma otimizada.
+    if (!email) return res.status(400).json({ erro: true, mensagem: "É necessário informar o e-mail" });
 
-    return res.json([
-        id,
-        //_id,
-        nome,
-        email
-    ]); 
+    const transport = nodemailer.createTransport({
+      host: "sandbox.smtp.mailtrap.io",
+      port: 2525,
+      auth: {
+        user: "3f206901ac692f",
+        pass: "ae20b9fe8d199d"
+      }
+    });
+
+    await transport.sendMail({
+      from: "devfernandouk@gmail.com",
+      to: email,
+      subject: "Redefinição de senha",
+      text: "Você solicitou alteração de senha.",
+      html: "<b>Você solicitou alteração de senha.</b>"
+    });
+
+    res.json({ erro: false, mensagem: "E-mail enviado com sucesso!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: true, mensagem: "Erro ao enviar o e-mail" });
+  }
 });
 
-// CRIANDO METODO DELETE:
-app.delete('/contato/:id', (req, res) => {
-    const { id } = req.params;
-
-    return res.json({
-        id
-    });
-});
-*/
-
-// ROTA PARA LOGIN DO USUARIO: NODE.JS + MYSQL
-app.post('/login', async (req, res) => { // ROTA PARA LOGIN DO USUARIO
-    const user = await User.findOne({ // findOne = busca um unico usuario no banco de dados.
-        attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
-        where: { // where = filtra os resultados com base em uma condicao especifica.
-            email: req.body.email // Filtra os resultados pelo email fornecido no corpo da requisição.
-        }
-    });
-
-    // Se o usuario nao for encontrado, retorna um erro:
-    if (!user) { // Se o usuario nao for encontrado, retorna um erro.
-        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
-            erro: true, // Indica que houve um erro na autenticação.
-            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que o usuario nao foi encontrado.
-        });
-    };
-
-    // Se o usuario for encontrado, verifica se a senha fornecida corresponde a senha armazenada no banco de dados.
-    // bcrypt.compare = compara a senha fornecida com a senha armazenada no banco de dados.
-    if (!(await bcrypt.compare(req.body.password, user.password))) { // Se a senha fornecida nao corresponder a senha armazenada, retorna um erro.
-        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
-            erro: true, // Indica que houve um erro na autenticação.
-            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que a senha e invalida.
-        });
-    };
-
-    // Se a senha for valida, gera um token JWT para o usuario.
-    var token = jwt.sign({ id: user.id, levelAcess: 1 }, process.env.SECRET, { // Cria um token JWT usando a chave secreta definida no arquivo .env.
-        expiresIn: '48h' // Define o tempo de expiração do token para 48 horas.
-    });
-
-    return res.json({ // Se a autenticação for bem sucedida, retorna uma resposta de sucesso.
-        erro: false, // Indica que nao houve erro na autenticação.
-        mensagem: "Login efetuado com sucesso!", // Mensagem de sucesso indicando que o login foi efetuado com sucesso.
-        token // Retorna o token JWT gerado para o usuario.
-    });
-});
-
-// ROTA PARA VALIDAR O TOKEN DO USUARIO: NODE.JS + MYSQL
-app.get("/val-token", eAdmin, async (req, res) => { // ROTA PARA VALIDAR O TOKEN DO USUARIO
-    await User.findByPk(req.userId, {attributes: ['id', 'name', 'email']}) // findByPk = busca um unico usuario no banco de dados pelo id do usuario.
-    .then((user) => { // Se o usuario for encontrado, retorna uma resposta de sucesso. 
-        return res.json({ // Retorna uma resposta indicando que o token e valido.
-            erro: false, // Indica que nao houve erro na validação do token.
-            user: user, // Retorna o usuario encontrado.
-        });
-    }).catch(() => {
-        return res.json({
-            erro: true, // Indica que houve um erro na validação do token.
-            mensagem: "Erro! Necessario realizar o login para acessar a pagina!" // Mensagem de erro indicando que o usuario nao foi encontrado.
-        });
-    });
-});
-
-
-// ROTA PARA REDEFENIR SENHA DO USUARIO: NODE.JS + MYSQL
-app.post('/recover-password', async (req, res) => { // ROTA PARA REDEFENIR SENHA DO USUARIO
-
-	// Looking to send emails in production? Check out our Email API/SMTP product!
-	var transport = nodemailer.createTransport({
-		host: "sandbox.smtp.mailtrap.io",
-		port: 2525,
-		auth: {
-		user: "20faf104eaa252",
-		pass: "309d72084e4997"
-		}
-	});
-
-	var message = {
-		from: "cesar@celke.com.br", // Sender address
-		to: "receiver@sender.com", // List of recipients
-		subject: "Redefinição de senha", // Subject line
-		text: "Clique no link para redefinir sua senha: http://example.com/recover-password", // Plain text body
-		html: "<p>Clique no link para redefinir sua senha: <a href='http://example.com/recover-password'>Redefinir senha</a></p>" // HTML body content
-	};
-
-	await transport.sendMail(message, (err, info) => {
-		if (err) {
-			return res.status(400).json({
-				erro: true,
-				mensagem: "Erro! E-mail nao enviado com sucesso!"
-			});
-		} else {
-			return res.json({
-				erro: false,
-				mensagem: "E-mail enviado com sucesso!"
-			});
-		}
-	});
-
-	/*
-    const user = await User.findOne({ // findOne = busca um unico usuario no banco de dados.
-        attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
-        where: { // where = filtra os resultados com base em uma condicao especifica.
-            email: req.body.email // Filtra os resultados pelo email fornecido no corpo da requisição.
-        }
-    });
-
-    // Se o usuario nao for encontrado, retorna um erro:
-    if (!user) { // Se o usuario nao for encontrado, retorna um erro.
-        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
-            erro: true, // Indica que houve um erro na autenticação.
-            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que o usuario nao foi encontrado.
-        });
-    };
-
-    // Se o usuario for encontrado, verifica se a senha fornecida corresponde a senha armazenada no banco de dados.
-    // bcrypt.compare = compara a senha fornecida com a senha armazenada no banco de dados.
-    if (!(await bcrypt.compare(req.body.password, user.password))) { // Se a senha fornecida nao corresponder a senha armazenada, retorna um erro.
-        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
-            erro: true, // Indica que houve um erro na autenticação.
-            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que a senha e invalida.
-        });
-    };
-
-    // Se a senha for valida, gera um token JWT para o usuario.
-    var token = jwt.sign({ id: user.id, levelAcess: 1 }, process.env.SECRET, { // Cria um token JWT usando a chave secreta definida no arquivo .env.
-        expiresIn: '48h' // Define o tempo de expiração do token para 48 horas.
-    });
-
-    return res.json({ // Se a autenticação for bem sucedida, retorna uma resposta de sucesso.
-        erro: false, // Indica que nao houve erro na autenticação.
-        mensagem: "Login efetuado com sucesso!", // Mensagem de sucesso indicando que o login foi efetuado com sucesso.
-        token // Retorna o token JWT gerado para o usuario.
-    });
-	*/
-});
-
-
-// INICIANDO O SERVIDOR HTTP:
-app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.
-    console.log("SERVIDOR RODANDO NA PORTA 8080!");
+// =======================
+// INÍCIO DO SERVIDOR
+// =======================
+app.listen(8080, () => {
+  console.log("SERVIDOR RODANDO NA PORTA 8080!");
 });
