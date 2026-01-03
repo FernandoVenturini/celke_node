@@ -1,11 +1,15 @@
+// Importando o dotenv para carregar variaveis de ambiente
+require('dotenv').config(); // Carrega as variaveis de ambiente do arquivo .env
+
 // IMPORTANDO O EXPRESS
 const express = require("express");
 
 // IMPORTANDO O CORS
 var cors = require('cors'); // Importando o cors para permitir requisições de outros dominios
 
-// CONEXAO COM O BANCO DE DADOS
-const db = require('./models/db');
+const yup = require('yup'); // Importando o yup para validação de dados
+
+const nodemailer = require('nodemailer'); // Importando o nodemailer para enviar e-mails
 
 // IMPORTANDO O BCRYPTJS
 const bcrypt = require('bcryptjs');
@@ -14,8 +18,8 @@ const { where } = require("sequelize");
 // Importando o JWT para autenticação de usuários
 const jwt = require('jsonwebtoken'); 
 
-// Importando o dotenv para carregar variaveis de ambiente
-require('dotenv').config(); // Carrega as variaveis de ambiente do arquivo .env
+// CONEXAO COM O BANCO DE DADOS
+const db = require('./models/db');
 
 const { eAdmin } = require('./middlewares/auth'); // Importando o middleware de autenticação
 
@@ -286,6 +290,82 @@ app.get("/val-token", eAdmin, async (req, res) => { // ROTA PARA VALIDAR O TOKEN
     });
 });
 
+
+// ROTA PARA REDEFENIR SENHA DO USUARIO: NODE.JS + MYSQL
+app.post('/recover-password', async (req, res) => { // ROTA PARA REDEFENIR SENHA DO USUARIO
+
+	// Looking to send emails in production? Check out our Email API/SMTP product!
+	var transport = nodemailer.createTransport({
+		host: "sandbox.smtp.mailtrap.io",
+		port: 2525,
+		auth: {
+		user: "20faf104eaa252",
+		pass: "309d72084e4997"
+		}
+	});
+
+	var message = {
+		from: "cesar@celke.com.br", // Sender address
+		to: "receiver@sender.com", // List of recipients
+		subject: "Redefinição de senha", // Subject line
+		text: "Clique no link para redefinir sua senha: http://example.com/recover-password", // Plain text body
+		html: "<p>Clique no link para redefinir sua senha: <a href='http://example.com/recover-password'>Redefinir senha</a></p>" // HTML body content
+	};
+
+	await transport.sendMail(message, (err, info) => {
+		if (err) {
+			return res.status(400).json({
+				erro: true,
+				mensagem: "Erro! E-mail nao enviado com sucesso!"
+			});
+		} else {
+			return res.json({
+				erro: false,
+				mensagem: "E-mail enviado com sucesso!"
+			});
+		}
+	});
+
+	/*
+    const user = await User.findOne({ // findOne = busca um unico usuario no banco de dados.
+        attributes: ['id', 'name', 'email', 'password'], // Especifica quais atributos devem ser retornados.
+        where: { // where = filtra os resultados com base em uma condicao especifica.
+            email: req.body.email // Filtra os resultados pelo email fornecido no corpo da requisição.
+        }
+    });
+
+    // Se o usuario nao for encontrado, retorna um erro:
+    if (!user) { // Se o usuario nao for encontrado, retorna um erro.
+        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
+            erro: true, // Indica que houve um erro na autenticação.
+            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que o usuario nao foi encontrado.
+        });
+    };
+
+    // Se o usuario for encontrado, verifica se a senha fornecida corresponde a senha armazenada no banco de dados.
+    // bcrypt.compare = compara a senha fornecida com a senha armazenada no banco de dados.
+    if (!(await bcrypt.compare(req.body.password, user.password))) { // Se a senha fornecida nao corresponder a senha armazenada, retorna um erro.
+        return res.status(400).json({ // Retorna um erro 400 (Bad Request) com a mensagem de erro.
+            erro: true, // Indica que houve um erro na autenticação.
+            mensagem: "Erro! Usuario ou a senha incorreta!" // Mensagem de erro indicando que a senha e invalida.
+        });
+    };
+
+    // Se a senha for valida, gera um token JWT para o usuario.
+    var token = jwt.sign({ id: user.id, levelAcess: 1 }, process.env.SECRET, { // Cria um token JWT usando a chave secreta definida no arquivo .env.
+        expiresIn: '48h' // Define o tempo de expiração do token para 48 horas.
+    });
+
+    return res.json({ // Se a autenticação for bem sucedida, retorna uma resposta de sucesso.
+        erro: false, // Indica que nao houve erro na autenticação.
+        mensagem: "Login efetuado com sucesso!", // Mensagem de sucesso indicando que o login foi efetuado com sucesso.
+        token // Retorna o token JWT gerado para o usuario.
+    });
+	*/
+});
+
+
+// INICIANDO O SERVIDOR HTTP:
 app.listen(8080, () => { // Inicia o servidor HTTP e faz com que ele "escute" por requisições em uma porta específica.
     console.log("SERVIDOR RODANDO NA PORTA 8080!");
 });

@@ -88,3 +88,6 @@ CREATE TABLE `users`(
 
 ### Instalando dependencia cors (PERMITI ACESSO A API)
     -> npm install --save cors
+
+### Instalando nodemailer -> para enviar e-mail:
+	-> npm install --save nodemailer
