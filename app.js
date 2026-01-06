@@ -142,7 +142,7 @@ app.post("/recover-password", async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) return res.status(400).json({ erro: true, mensagem: "É necessário informar o e-mail" });
+    if (!email) return res.status(400).json({ erro: true, mensagem: "É necessário informar o e-mail." });
 
     const transport = nodemailer.createTransport({
       host: "sandbox.smtp.mailtrap.io",
@@ -164,7 +164,7 @@ app.post("/recover-password", async (req, res) => {
     res.json({ erro: false, mensagem: "E-mail enviado com sucesso!" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ erro: true, mensagem: "Erro ao enviar o e-mail" });
+    res.status(500).json({ erro: true, mensagem: "Erro ao enviar o e-mail!" });
   }
 });
 
@@ -172,5 +172,5 @@ app.post("/recover-password", async (req, res) => {
 // INÍCIO DO SERVIDOR
 // =======================
 app.listen(8080, () => {
-  console.log("SERVIDOR RODANDO NA PORTA 8080!");
+  console.log("SERVIDOR RODANDO NA PORTA 8080!!!");
 });
